@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row mt-5">
+    <div class="col-lg-6">
+
+        <div class="box-element" id="form-wrapper"
+            style=" box-shadow: hsl(0, 0%, 80%) 0 0 16px; background-color: #fff; border-radius: 4px; padding: 10px; ">
+            <div class="text-center">
+                <h5><strong>Manage Orders</strong></h5><br>
+            </div>
+
+            <div>
+                <ul id="orderList">
+
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+
+
+    <div id="orderSummary" class="col-lg-6" style="display:none;">
+        <div id="box-element" class="box-element"
+            style=" box-shadow: hsl(0, 0%, 80%) 0 0 16px; background-color: #fff; border-radius: 4px; padding: 10px;">
+            <div class="text-center">
+                <h5> <strong>Order Summary </strong> </h5>
+            </div>
+
+            <div>
+                <table class="table">
+                    <tr>
+                        <th>
+                            <h5>Items: <strong id="totalItem"></strong></h5>
+                        </th>
+                        <th>
+                            <h5>Total: <strong id="totalAmount">${{Total}}<strong></h5>
+                        </th>
+
+                    </tr>
+                </table>
+            </div>
+
+            <div class="cart-row"
+                style="display: flex; align-items: flex-stretch; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ececec;">
+                <div style="flex: 2;"></div>
+                <div style="flex: 2;"> <strong>Item</strong> </div>
+                <div style="flex: 2;"><strong>Price</strong></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    document.querySelector('#brand').style.display = 'none';
+    document.querySelector('#category').style.display = 'none';
+</script>
+
+<script>
+    var globalVariable = {};
+    OrderList()
+
+
+    //Returns csrf token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function OrderList() {
+        var url = 'http://127.0.0.1:8000/api/orderlist/';
+        fetch(url)
+            // parse in json
+            .then((resp) => resp.json())
+
+            .then(function (data) {
+                console.log('Data', data);
+                globalVariable.orderList = data;
+                var list = data;
+                for (var x in list) {
+                    var orderList = document.getElementById('orderList');
+
+
+
+
+                    var li = document.createElement('li');
+                    li.innerHTML = 'Order No: ' + list[x].id;
+                    li.id = 'orderNo' + list[x].id
+                    orderList.append(li)
+
+                    var status = document.createElement('span');
+                    status.innerHTML = list[x].statusname
+                    status.className = "ml-4"
+                    status.style.color = 'green'
+                    li.append(status)
+
+                    var detail = document.createElement('button');
+                    detail.className = "btn btn-dark mr-3 orderDetails";
+                    // detail.id = list[i].id
+                    detail.innerHTML = 'View Detail';
+                    detail.style.float = 'right'
+                    detail.setAttribute('data-id', list[x].id)
+                    detail.setAttribute('data-amount', list[x].amount)
+                    detail.addEventListener("click", function () {
+                        document.querySelectorAll('.orderDetails').forEach(function (button) {
+                            button.onclick = function () {
+                                document.querySelector('#orderSummary').style.display = '';
+                                var deleteDiv = document.getElementById('productList');
+                                // If View Details of different order remove details of old order first
+                                // before displaying details of new orders.
+                                if (deleteDiv != null) {
+                                    deleteDiv.remove();
+                                }
+                                // url to fetch data of particular order by using order id.
+
+                                var orderID = button.dataset.id;
+                                var url = 'http://127.0.0.1:8000/api/order/' + orderID + '/';
+                                //fetching data from above url
+                                fetch(url)
+                                    // parse in json
+                                    .then((resp) => resp.json())
+                                    // data = list of product
+                                    .then(function (data) {
+                                        console.log('Data', data)
+                                        var list1 = data;
+                                        // count items in order
+                                        itemCnt = 0;
+                                        var boxElement = document.querySelector('#box-element');
+                                        // Every order summary product list is inside in this div tag.
+                                        var productList = document.createElement('div');
+                                        productList.id = 'productList';
+                                        boxElement.append(productList);
+
+                                        for (var i in list1) {
+                                            var shoeSize = list1[i].Shoesize;
+                                            // Product details to show in order summary
+                                            var url = 'http://127.0.0.1:8000/api/product/' + list1[i].product + '/';
+                                            fetch(url)
+                                                // parse in json
+                                                .then((resp) => resp.json())
+                                                // data = list of product
+                                                .then(function (data) {
+                                                    console.log('productList', data)
+                                                    var list2 = data;
+                                                    for (var j in list2) {
+                                                        //console.log(j)
+                                                        console.log(i)
+                                                        var row = document.createElement('div');
+                                                        row.className = "cart-row";
+                                                        row.style.display = 'flex';
+                                                        row.style.alignItems = 'flex-stretch';
+                                                        row.style.paddingBottom = 10;
+                                                        row.style.marginBottom = 10;
+                                                        productList.append(row);
+
+                                                        var imgDiv = document.createElement('div');
+                                                        imgDiv.style.flex = 2;
+                                                        row.append(imgDiv);
+                                                        var img = document.createElement('img');
+                                                        img.style.width = '100px';
+                                                        img.src = list2[j].image;
+                                                        imgDiv.append(img);
+
+                                                        var productInfo = document.createElement('div');
+                                                        productInfo.style.flex = 2;
+                                                        row.append(productInfo);
+                                                        var name = document.createElement('p');
+                                                        name.innerHTML = list2[j].name;
+                                                        productInfo.append(name);
+                                                        var collection = document.createElement('small');
+                                                        collection.innerHTML = list2[j].gender.gender + ' collection';
+                                                        productInfo.append(collection);
+
+                                                        var size = document.createElement('p');
+                                                        size.innerHTML = list1[i].Shoesize;
+                                                        productInfo.append(size);
+
+                                                        var priceDiv = document.createElement('div');
+                                                        priceDiv.style.flex = 2;
+                                                        priceDiv.innerHTML = '$ ' + list2[j].price;
+                                                        row.append(priceDiv);
+
+                                                        var line = document.createElement('hr')
+                                                        productList.append(line);
+
+                                                    }
+
+                                                })
+
+                                            itemCnt++;
+                                        }
+                                        document.querySelector('#totalItem').innerHTML = itemCnt;
+                                        document.querySelector('#totalAmount').innerHTML = '$' + button.dataset.amount;
+                                    })
+                            }
+                        });
+                    });
+                    li.append(detail)
+
+                    var li2 = document.createElement('li');
+                    li2.id = list[x].id;
+                    orderList.append(li2)
+
+                    statusList(list[x].id)
+
+                    var hr = document.createElement('hr');
+                    orderList.append(hr)
+                }
+
+            })
+
+    }
+
+
+
+    function statusList(x) {
+        var url2 = 'http://127.0.0.1:8000/api/Statuslist/';
+        //fetching data from above url
+        fetch(url2)
+            // parse in json
+            .then((resp) => resp.json())
+            // data = list of product
+            .then(function (data1) {
+                console.log(x)
+                var list3 = data1;
+                var b = document.getElementById(x);
+                for (var y = 0; y < list3.length; y++) {
+                    if (list3[y].name != 'Order Confirmed') {
+
+
+                        var a = document.createElement('button');
+                        a.innerHTML = list3[y].name;
+                        a.className = 'btn btn-success ml-2 statusButton'
+                        a.setAttribute('data-orderID', x)
+                        a.setAttribute('data-statusid', list3[y].id)
+                        a.addEventListener('click', () => {
+                            document.querySelectorAll('.statusButton').forEach(function (button) {
+                                button.onclick = () => {
+                                    let request = new XMLHttpRequest();
+                                    let data = new FormData();
+                                    data.append('status', button.dataset.statusid)
+                                    request.open('PATCH', 'http://127.0.0.1:8000/api/changeStatus/' + button.dataset.orderid + '/');
+                                    const csrftoken = getCookie('csrftoken');
+                                    request.setRequestHeader("X-CSRFToken", csrftoken);
+                                    request.send(data);
+                                    request.onload = () => {
+                                        let data = JSON.parse(request.responseText);
+                                        console.log(data)
+                                        if (data.success === true) {
+                                            location.reload()
+                                        }
+                                        else {
+                                            alert('fail')
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                        b.append(a);
+                    }
+
+                }
+
+            })
+    }
+
+
+    function orderStatus(x, res) {
+        var b = document.getElementById('orderNo' + x);
+        for (var y in res) {
+
+            var status = document.createElement('span');
+            status.innerHTML = res[y].name;
+            status.className = "ml-4"
+            status.style.color = 'green'
+            b.append(status)
+
+
+        }
+    }
+</script>
+
+{% endblock %}

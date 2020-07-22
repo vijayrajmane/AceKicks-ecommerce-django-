@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% load static%}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'style.css' %} ">
+    {% block css%}
+    {% endblock %}
+    
+    <title>AceKicks</title>
+
+  </head>
+  <body>
+
+    <div class="text-right bg-dark" id="top">
+        {% if not request.user.is_authenticated%}
+
+            <button class="btn btn-dark" id="loginUser">Login</button>
+            <button class="btn btn-dark" id="RegisterUser">Register</button>     
+        
+        {% else %}
+        
+        <form action="">
+          <a href="#" class="btn btn-dark mx-2" id="">{{request.user}}</a> 
+            <a href="{% url 'logout' %}" class="btn btn-dark mx-2" id="logoutUser">Logout</a> 
+        </form>
+        {% endif%}
+    </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="text-center p-1" style="border: white solid; border-radius: 15px;">
+            <a class="navbar-brand ml-2 " href="#" style=" font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">ACEKICKS</a>
+        </div>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+
+            <li class="nav-item">
+              <div class="text-right bg-dark">        
+                    <button class="btn btn-dark" id=""> <a href="/" style="color: white;text-decoration: none;" class="">Home</a> </button>           
+            </div>
+            </li>
+
+            <li class="nav-item">
+              <div class="text-right bg-dark">     
+                    <button class="btn btn-dark" id="brand">Brand</button>            
+            </div>
+            </li>
+
+            <li class="nav-item">
+              <div class="text-right bg-dark">       
+                    <button class="btn btn-dark" id="category">Category</button>            
+            </div>
+            </li>
+            {% if request.user.is_authenticated%}
+            {% if request.user.is_superuser%}
+            <li class="nav-item">
+              <div class="text-right bg-dark"> 
+                    <a class="btn btn-dark" href="/manageOrder" >Manage Orders</a>    
+            </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <div class="text-right bg-dark"> 
+                    <a class="btn btn-dark" href="/myorder" >My Orders</a>    
+            </div>
+            </li>
+            {% endif %}
+            {% endif %}
+          </ul>
+          <form class="form-inline my-2 my-lg-0" action="/search/">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" name="q" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0 mr-5" type="submit">Search</button>
+          </form>
+          {% if request.user.is_authenticated%}
+          {% if not request.user.is_superuser %}
+          <div class="form-inline my-2 my-lg-0 mr-3">
+            <a  href="/cart"><i class="fas fa-shopping-cart" style="color: white;"></i></a> 
+            <p style="display: block; text-align: center; color: #fff; background-color: red; width: 20px; height: 25px; border-radius: 50%; font-size: 14px;">{{count}}</p>
+          </div>
+          {% endif %}
+          {% endif %}
+        </div>
+      </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <br>
+    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    {% block javascript %}
+    {% endblock %}
+    
+
+</body>
+</html>

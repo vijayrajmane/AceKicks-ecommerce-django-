@@ -1,0 +1,38 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+
+
+
+
+{% if request.user.is_authenticated %}
+<div  class="mt-2 mb-5 text-left"  style="float: right; width: 50%;">
+    <form action="" id="reviewForm"  method="POST">{% csrf_token %}
+
+        <div class="form-group">
+            <label for="">Rating</label>
+            <input type="text" name="rating"  class="form-control"  placeholder="Rate 1-5">
+        </div>    
+    
+        <div class="form-group">
+          <label for="exampleFormControlTextarea1">Review</label>
+          <textarea class="form-control" name="comment"  rows="3" placeholder="Enter Review"></textarea>
+        </div>
+        <button id="submit" class="btn btn-dark"> Submit</button>
+
+      </form>
+</div>
+{% endif %}
+
+<div class="mt-2 mb-5 text-left" style="float: left; width: 40%;" >
+    
+    <ul class="list-unstyled" id="productReviewList">
+        <h5>Customer Review</h5>
+        <hr>
+    </ul>
+      
+</div>  
+
+
+
+
+

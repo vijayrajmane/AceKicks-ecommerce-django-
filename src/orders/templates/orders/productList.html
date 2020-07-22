@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+    <br>
+    <div class="text-left" style="float: left; width: 20%; height: 30%;">
+          <ul id="genderFilter"><h5>Gender</h5></ul>
+          <hr>
+          <ul id="brandFilter"><h5>Brand</h5></ul>
+          <hr>
+          <ul id="categoryFilter"><h5>Category</h5></ul>
+    </div>
+    <div style="float: right; width: 80%; ">
+        <div class="row" id="row"></div>
+    </div>
+
+<script>
+  productList()
+  genderFilter()
+  document.querySelector('#brand').style.display = 'none';
+  document.querySelector('#category').style.display = 'none';
+    function genderFilter(){
+      var url = 'http://127.0.0.1:8000/api/genders'
+      fetch(url)
+      // parse in json
+      .then((resp)=> resp.json())
+
+      .then(function(data){   // data = list of product
+          console.log('Data', data);
+          var list = data;
+          for(x in list.gender){
+              var gen = document.getElementById('genderFilter')
+              var li = document.createElement("li")
+              var a = document.createElement("a")
+              a.href =  '/gender/'+list.gender[x].id
+              a.innerHTML = list.gender[x].gender
+              li.append(a)
+              gen.append(li)
+          }
+          for(x in list.brand){
+              var brand = document.getElementById('brandFilter')
+              var li = document.createElement("li")
+              var a = document.createElement("a")
+              a.href =  '/brand/'+list.brand[x].id
+              a.innerHTML = list.brand[x].name
+              li.append(a)
+              brand.append(li)
+          }
+          for(x in list.category){
+              var category = document.getElementById('categoryFilter')
+              var li = document.createElement("li")
+              var a = document.createElement("a")
+              a.href =  '/category/'+list.category[x].id
+              a.innerHTML = list.category[x].name
+              li.append(a)
+              category.append(li)
+          }
+        })
+    }
+
+    function productList(){
+        var path = window.location.pathname;  //return path of current window
+        var url = 'http://127.0.0.1:8000/api'+path;   //url of api data
+        //fetching data from above url
+        fetch(url)
+        // parse in json
+        .then((resp)=> resp.json())
+
+        .then(function(data){   // data = list of product
+            console.log('Data', data);
+            var list = data;
+
+            // display every product
+            for(var i in list){
+                //console.log(list[i].gender  );
+                var imagePath = list[i].image
+                var row = document.getElementById('row')
+
+                var col = document.createElement("div")
+                col.className = 'col-lg-4'
+                row.append(col)
+
+                var card = document.createElement('div')
+                card.className = 'card'
+                col.append(card)
+
+                var productLink = document.createElement("a")
+                productLink.href = '/detail/'+list[i].id
+                productLink.style.color ='black'
+                card.append(productLink)
+
+                var pic = document.createElement("img")
+                pic.className = 'card-img-top'
+                pic.height = 300
+                pic.alt = 'Product Image'
+                pic.src = imagePath
+                productLink.append(pic)
+
+                var cardBody = document.createElement("div")
+                cardBody.className = 'card-body'
+                productLink.append(cardBody)
+
+                var productName = document.createElement("h5")
+                productName.className = "card-title"
+                productName.innerHTML = list[i].name;
+                cardBody.append(productName)
+
+                var collections = document.createElement("small")
+                collections.innerHTML = list[i].gender.gender+' Collections'
+                cardBody.append(collections)
+            }
+
+
+        })
+    }
+
+</script>
+
+{% endblock %}

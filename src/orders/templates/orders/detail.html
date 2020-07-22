@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="mt-5 ">
+    <div style="float: left;width: 50%; height: 50%;" class="mb-5">
+        <img id="productImage" src="" alt="" width="90%">
+    </div>
+    <div style="float: right;width: 50%;height: 31em; " class="mb-5">
+        <div id="productInfo"></div>
+    </div>
+</div>
+<div class="mt-2 mb-5 text-left">
+    {% include 'review/review.html'%}
+</div>
+
+<script>
+    productDetail()
+    reviewList()
+
+    //Returns csrf token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function reviewList() {
+        var path = window.location.pathname;  //return path of current window
+        var url = 'http://127.0.0.1:8000/api' + path;   //url of api data
+        //fetching data from above url
+        fetch(url)
+            // parse in json
+            .then((resp) => resp.json())
+
+            .then(function (data) {   // data = list of product
+                console.log('Data', data);
+                var list = data;
+
+                for (var i in list.product) {
+                    console.log(list.product[i].image)
+
+                    var url = 'http://127.0.0.1:8000/api/review/' + list.product[i].id;
+                    //b.setAttribute("data-id", list.product[i].id)
+                    fetch(url)
+                        // parse in json
+                        .then((resp) => resp.json())
+
+                        .then(function (data) {
+                            console.log('Review', data);
+                            var list = data
+                            for (var i in list) {
+
+                                var reviewList = document.getElementById('productReviewList')
+                                var li = document.createElement('li')
+                                reviewList.append(li)
+                                var user = document.createElement('strong')
+                                user.innerHTML = list[i].user
+                                li.append(user)
+
+                                var rating = document.createElement('li')
+                                rating.innerText = 'Rating: ' + (list[i].rating | 0) + '/5'
+                                reviewList.append(rating)
+
+                                var review = document.createElement('li')
+                                review.innerHTML = 'Review: ' + list[i].comment
+                                reviewList.append(review)
+
+                                var hr = document.createElement('hr')
+                                reviewList.append(hr)
+                            }
+
+                        })
+
+                }
+
+            })
+
+
+    }
+
+
+
+    function productDetail() {
+        var path = window.location.pathname;  //return path of current window
+        var url = 'http://127.0.0.1:8000/api' + path;   //url of api data
+        //fetching data from above url
+        fetch(url)
+            // parse in json
+            .then((resp) => resp.json())
+
+            .then(function (data) {   // data = list of product
+                console.log('Data', data);
+                var list = data;
+
+                for (var i in list.product) {
+                    console.log(list.product[i].image)
+                    var img = document.getElementById('productImage')
+                    img.alt = 'Product Image'
+                    img.src = list.product[i].image
+
+                    var info = document.getElementById('productInfo')
+                    var title = document.createElement('h3')
+                    title.innerHTML = list.product[i].name
+                    info.append(title)
+                    var hr = document.createElement('hr')
+                    info.append(hr)
+
+                    var description = document.createElement('p')
+                    description.innerHTML = list.product[i].description
+                    info.append(description)
+                    var hr = document.createElement('hr')
+                    info.append(hr)
+
+                    var price = document.createElement('h4')
+                    price.innerHTML = '$' + (list.product[i].price | 0)
+                    price.className = "mt-4 ";
+                    info.append(price)
+
+                    var sizeDropdown = document.createElement('select')
+                    sizeDropdown.id = 'size'
+                    sizeDropdown.className = "mt-5 ";
+                    sizeDropdown.style.height = '50px'
+                    sizeDropdown.style.width = '50%'
+                    sizeDropdown.style.borderRadius = '5%'
+                    info.append(sizeDropdown)
+                    var option = document.createElement('option')
+
+                    sizeDropdown.className = 'text-center'
+                    option.innerHTML = 'Choose your size'
+                    option.value = ''
+                    sizeDropdown.append(option)
+
+                    for (var j in list.size) {
+                        var sizeOption = document.createElement('option')
+                        sizeOption.value = list.size[j].size
+                        sizeOption.innerHTML = list.size[j].size
+                        sizeDropdown.append(sizeOption)
+                    }
+                    var br = document.createElement('br')
+                    info.append(br)
+
+
+                    var detail = document.createElement('button');
+                    detail.className = "btn btn-dark  mt-4 ";
+                    detail.id = 'addCart';
+                    detail.style.width = '50%'
+                    detail.innerHTML = 'Add To Cart';
+                    detail.setAttribute("data-id", list.product[i].id)
+                    // On clicking in this button it will display order summary to user.
+                    detail.addEventListener("click", function () {
+
+                        let productID = document.querySelector('#addCart').dataset.id;
+                        var e = document.getElementById("size");
+                        var size = e.options[e.selectedIndex].value;
+                        console.log(productID);
+                        console.log(size);
+                        let request = new XMLHttpRequest();
+                        if (size === '') {
+                            alert('Select the shoe size')
+                        }
+                        else {
+                            let data = new FormData();
+                            data.append('item', productID);
+                            data.append('Shoesize', size);
+                            const csrftoken = getCookie('csrftoken');
+                            request.open('POST', "http://127.0.0.1:8000/api/cart/");
+                            request.setRequestHeader("X-CSRFToken", csrftoken);
+                            request.send(data)
+                            request.onload = () => {
+                                let data = JSON.parse(request.responseText);
+                                console.log(data)
+                                if (data.success) {
+                                    location.reload();
+                                }
+                                else {
+                                    window.location = "http://127.0.0.1:8000"
+                                    alert('Login/Register to order')
+                                }
+                            }
+                        }
+                    });
+                    var buttonForm = document.getElementById('addCartButton');
+                    info.append(detail)
+                }
+            })
+    }
+
+</script>
+
+
+<script src="{% static 'js/addItem.js' %}"></script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        if (document.querySelector('#reviewForm')) {
+            document.querySelector('#reviewForm').onsubmit = () => {
+
+                var path = window.location.pathname;  //return path of current window
+                var url = 'http://127.0.0.1:8000/api' + path;   //url of api data
+                //fetching data from above url
+                fetch(url)
+                    // parse in json
+                    .then((resp) => resp.json())
+
+                    .then(function (res) {   // data = list of product
+                        console.log('Data', res);
+                        var list = res;
+                        for (var i in list.product) {
+
+                            let reviewForm = document.querySelector('#reviewForm');
+                            let request = new XMLHttpRequest();
+                            let data = new FormData(reviewForm);
+
+                            data.append('item', list.product[i].id)
+                            console.log(data)
+                            request.open('POST', "/api/review/" + list.product[i].id + "/");
+                            request.send(data)
+
+                            request.onload = () => {
+                                let data = JSON.parse(request.responseText);
+                                if (data.success) {
+                                    location.reload()
+                                }
+                                else {
+                                    alert('fail');
+                                }
+                            }
+                        }
+                    })
+
+            }
+        }
+
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    
+    <div class="row">
+        {% for x in productList %}
+        <div class="col-lg-4">
+            <div class="card" style="width: 18rem;">
+                <a href="/detail/{{x.id}}" style="color: black;">
+                    <img class="card-img-top" src="{{x.image.url}}" alt="Card image cap" height="300px">
+                    <div class="card-body">
+                    <h5 class="card-title">{{x.name}}</h5>
+                    <small>{{x.gender}} Collections</small>
+                </div>
+                </a>
+            </div>
+            <br>
+        </div>
+        
+        {% endfor %}
+        
+    </div>
+{% endblock %}

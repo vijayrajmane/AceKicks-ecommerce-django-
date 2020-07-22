@@ -1,0 +1,202 @@
+{% extends 'base.html'%}
+{% load static %}
+
+{% block content %}
+<form id="csrf" action="GET">
+    {% csrf_token %}
+</form>
+<div class="row">
+    <div class="col-lg-12">
+
+        <div class="box-element mt-5"
+            style=" box-shadow: hsl(0, 0%, 80%) 0 0 16px; background-color: #fff; border-radius: 4px; padding: 10px;">
+            <a href="/" class="btn btn-dark ">Continue Shopping</a>
+            <br><br>
+            <table class="table">
+                <tr>
+                    <th>
+                        <h5>Items: <strong id="TotalItem"></strong></h5>
+                    </th>
+                    <th>
+                        <h5>Total: <strong id="TotalAmount"></strong></h5>
+                    </th>
+
+
+                    <th>
+                        <a id="checkout" class="btn btn-success" style="float: right; display: none;" href="/checkout">Checkout</a>
+                    </th>
+
+                </tr>
+            </table>
+        </div>
+
+        <br>
+
+
+
+
+        <div id="productList" class="box-element"
+            style=" box-shadow: hsl(0, 0%, 80%) 0 0 16px; background-color: #fff; border-radius: 4px; padding: 10px;">
+
+            <div class="cart-row"
+                style="display: flex; align-items: flex-stretch; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ececec;">
+                <div style="flex: 2;"></div>
+                <div style="flex: 2;"> <strong>Item</strong> </div>
+                <div style="flex: 2;"></div>
+                <div style="flex: 2;"><strong>Price</strong></div>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+<script type="text/javascript">
+    document.querySelector('#brand').style.display = 'none';
+    document.querySelector('#category').style.display = 'none';
+</script>
+
+<script>
+    cartList()
+
+    //Returns csrf token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+    function cartList() {
+        // url to fetch data of particular order by using order id.
+        var url = 'http://127.0.0.1:8000/api/cart/';
+        //fetching data from above url
+        fetch(url)
+            // parse in json
+            .then((resp) => resp.json())
+            // data = list of product
+            .then(function (data) {
+                console.log('Data', data);
+                var list = data;
+                var productList = document.querySelector('#productList');
+                var itemCnt = 0;
+                var amount = 0;
+                for (var i in list) {
+
+                    fetch('http://127.0.0.1:8000/api/product/' + list[i].item + "/")
+                        // parse in json
+                        .then((resp) => resp.json())
+                        // data = list of product
+                        .then(function (data) {
+                            console.log(data)
+                            for (var j in data) {
+
+                                
+                                var row = document.createElement('div');
+                                row.className = "cart-row";
+                                row.style.display = 'flex';
+                                row.style.alignItems = 'flex-stretch';
+                                row.style.paddingBottom = 10;
+                                row.style.marginBottom = 10;
+                                productList.append(row);
+
+                                var imgDiv = document.createElement('div');
+                                imgDiv.style.flex = 2;
+                                row.append(imgDiv);
+                                var img = document.createElement('img');
+                                img.style.width = '100px';
+                                img.src = data[j].image;
+                                imgDiv.append(img);
+
+                                var productInfo = document.createElement('div');
+                                productInfo.style.flex = 2;
+                                productInfo.className = 'mr-4'
+                                row.append(productInfo);
+                                var name = document.createElement('p');
+                                name.innerHTML = data[j].name;
+                                productInfo.append(name);
+                                var collection = document.createElement('small');
+                                collection.innerHTML = data[j].gender.gender + ' collection';
+                                productInfo.append(collection);
+                                var size = document.createElement('p');
+                                size.innerHTML = 'Size: ' + list[i].Shoesize;
+                                productInfo.append(size);
+
+                                var removeItem = document.createElement('div');
+                                removeItem.style.flex = 2;
+                                row.append(removeItem);
+
+                                var form = document.createElement('form');
+                                form.id = 'removeItemButton';
+                                form.method = 'POST';
+                                form.innerHTML = '{% csrf_token %}'
+                                removeItem.append(form);
+
+                                var b = document.createElement('input');
+                                b.type = 'button'
+                                b.className = 'btn btn-outline-danger minus'
+                                b.value = 'Remove Item';
+                                // Set id of object saved in cartItem table.
+                                //Used to send in url to remove item form cart. 
+                                b.setAttribute('data-id', list[i].id)
+                                b.addEventListener("click", function () {
+                                    document.querySelectorAll('.minus').forEach(function (button) {
+                                        button.onclick = function () {
+                                            let request = new XMLHttpRequest();
+                                            // get csrf token form getCookie()
+                                            const csrftoken = getCookie('csrftoken');
+                                            request.open('DELETE', "http://127.0.0.1:8000/api/cart/" + button.dataset.id + "/")
+                                            // send csrf token in request header.
+                                            request.setRequestHeader("X-CSRFToken", csrftoken);
+                                            request.send()
+                                            request.onload = () => {
+                                                let res = JSON.parse(request.responseText);
+                                                if (res.success) {
+                                                    location.reload()
+                                                }
+                                            }
+                                        }
+                                    });
+                                });
+                                removeItem.append(b);
+
+                                var priceDiv = document.createElement('div');
+                                priceDiv.style.flex = 2;
+                                priceDiv.innerHTML = '$ ' + data[j].price;
+                                priceDiv.className = 'ml-5'
+                                row.append(priceDiv);
+
+                                var line = document.createElement('hr')
+                                productList.append(line);
+                                itemCnt++;
+                                amount =amount +   (data[j].price|0);
+
+                            }
+                            //Display total no. of items in cart.
+                            var TotalItem = document.getElementById('TotalItem');
+                            TotalItem.innerHTML = itemCnt;
+                            var TotalAmount = document.getElementById('TotalAmount');
+                            TotalAmount.innerHTML = '$' + amount;
+                            if (itemCnt > 0) {
+                                var checkout = document.getElementById('checkout');
+                                checkout.style.display = '';
+                            }
+
+                        })
+
+                }
+                
+            })
+    }
+</script>
+{% endblock %}

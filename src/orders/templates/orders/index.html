@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="text-center slideshow-container"  >
+    <i class="fas fa-angle-left" id="prevBtn" ></i>
+    <i class="fas fa-angle-right" id="nextBtn"></i>
+
+    <div class="slideshow-slide">
+        <img src="{% static 'slideshow7.jpg' %}" id="lastClone" alt="">
+        <img src="{% static 'slideshow1.jpg' %}" alt="">
+        <img src="{% static 'slideshow2.jpg' %}" alt="">
+        <img src="{% static 'slideshow6.jpg' %}" alt="">
+        <img src="{% static 'slideshow7.jpg' %}" alt="">
+        <img src="{% static 'slideshow1.jpg' %}" id="firstClone" alt="">
+    </div>
+</div>
+<br>
+
+<div id="shoeType">
+
+
+
+    <div class="text-center row"  style=" width: 100%;margin: auto; ">
+        {% for i in gen %}
+        <div class=" col-lg-6">
+            <div class="men" style="position: relative;">
+                <img src="{{i.image.url}}" alt="" width="90%"><br>
+                <a  class="btn btn-dark" id="genderShoe" data-id="{{i.id}}" style="position: absolute;
+                top: 80%;
+                margin-left: 20px;
+                z-index: 10;
+                left: 5%;
+                cursor: pointer; color: white;" >{{i.gender}}</a>
+            </div>
+            <br>
+        </div>
+        <br>
+        {% endfor %}
+    </div>
+    <br><br>
+
+
+    <h3 class="text-center" id="brandMenu"> <b>Brands</b> </h3>
+        <div class="text-center row"  style=" width: 100%;margin: auto; ">
+            {% for i in shoeBrand %}
+            <div class=" col-lg-4">
+                <div class="men" style="position: relative;">
+                    <img src="{{i.image.url}}" alt="" width="90%"><br>
+                    <a  class="btn btn-dark" id="brandShoe" data-id="{{i.id}}" style="position: absolute;
+                    top: 80%;
+                    margin-left: 20px;
+                    z-index: 10;
+                    left: 5%;
+                    cursor: pointer; color: white;" >{{i.name}}</a>
+                </div>
+                <br>
+            </div>
+            <br>
+            {% endfor %}
+        </div>
+
+
+    <br>
+    <br>
+    <div>
+        <h3 class="text-center" id="categoryMenu"> <b>Category</b> </h3>
+        <div class="text-center"  style=" width: 100%;margin: auto; display: flex; ">
+            {% for x in cat %}
+            <div class="men" style="position: relative;">
+                <img src="{{x.image.url }}" alt="" width="90%" height="400px" ><br>
+                <a href="/category/{{x.id}}" class="btn btn-dark" style="position: absolute;
+                top: 80%;
+                margin-left: 20px;
+                z-index: 10;
+                left: 5%;
+                cursor: pointer;" >{{x.name}} </a>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+<div  id="login" style="display: none;" >
+    <div>
+        <form action="" class='m-5' id="loginForm" method="POST" >{% csrf_token %}
+            <h2>Login</h2>
+            {% if message_fail %}
+                <div >
+                    <label style="color: crimson;" for="">{{message_fail}}</label>
+
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <label for="exampleInputEmail1">Username</label>
+                <input type="text" class="form-control" name="username" aria-describedby="emailHelp" placeholder="Enter username">
+              </div>
+              <div class="form-group">
+                <label for="exampleInputPassword1">Password</label>
+                <input type="password" class="form-control" name="password" placeholder="Password">
+              </div>
+            <button class="btn btn-dark">Submit</button><br>
+            <br>
+
+        </form>
+    </div>
+</div>
+
+
+<div id="register" style="display: none;">
+
+    <form action="" class="m-5" id="registerForm" method="POST">{% csrf_token %}
+        <h2>Register</h2>
+        {% if message_fail %}
+            <div class="alert alert-danger" role="alert">
+                {{message_fail}}
+            </div>
+        {% endif %}
+
+        <br>
+        <div class="form-group">
+            <label for="exampleInputEmail1">First Name</label>
+            <input type="text" class="form-control" name="first_name" aria-describedby="emailHelp" placeholder="Enter First Name">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputPassword1">Last Name</label>
+            <input type="text" class="form-control" name="last_name" placeholder="Enter Last Name">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputPassword1">Username</label>
+            <input type="text" class="form-control" name="username" placeholder="Enter Last Name">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputEmail1">Email address</label>
+            <input type="text" class="form-control" name="email" aria-describedby="emailHelp" placeholder="Enter email">
+            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+        </div>
+        <div class="form-group">
+            <label for="exampleInputPassword1">Password</label>
+            <input type="password" class="form-control" name="password" placeholder="Password">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputPassword1">Confirm Password</label>
+            <input type="password" class="form-control" name="password2" placeholder="Confirm Password">
+        </div>
+
+        <button class="btn btn-dark">Signin</button>
+    </form>
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="{% static 'js/slide.js' %}"></script>
+    <script src="{% static 'js/login.js' %}"></script>
+    <script src="{% static 'js/register.js' %}"></script>
+    <script src="{% static 'js/scrollView.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded',()=>{
+
+            document.querySelectorAll('#genderShoe').forEach(function(a){
+                a.onclick = ()=>{
+                    var ID = a.dataset.id;
+                    console.log(ID)
+                    let request = new XMLHttpRequest();
+                    request.open('GET', "api/gender/"+ID, true);
+                    request.send()
+
+                    request.onload = ()=>{
+                        let res = JSON.parse(request.responseText);
+                        window.location = "gender/"+ID;
+                    }
+                }
+            });
+
+            document.querySelectorAll('#brandShoe').forEach(function(a){
+                a.onclick = ()=>{
+                    var ID = a.dataset.id;
+                    console.log(ID)
+                    let request = new XMLHttpRequest();
+                    request.open('GET', "api/brand/"+ID, true);
+                    request.send()
+
+                    request.onload = ()=>{
+                        let res = JSON.parse(request.responseText);
+                        window.location = "brand/"+ID;
+                    }
+                }
+            });
+
+        });
+    </script>
+{% endblock%}

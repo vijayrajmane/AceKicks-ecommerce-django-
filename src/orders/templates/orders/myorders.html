@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-lg-6">
+
+        <div class="box-element" id="form-wrapper"
+            style=" box-shadow: hsl(0, 0%, 80%) 0 0 16px; background-color: #fff; border-radius: 4px; padding: 10px;">
+            <div class="text-center">
+                <h5><strong>My Orders</strong></h5><br>
+            </div>
+            <div>
+                <ul id="orderList">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="orderSummary" class="col-lg-6" style="display:none;">
+        <div id="box-element" class="box-element"
+            style=" box-shadow: hsl(0, 0%, 80%) 0 0 16px; background-color: #fff; border-radius: 4px; padding: 10px;">
+            <div class="text-center">
+                <h5> <strong>Order Summary </strong> </h5>
+            </div>
+            <div>
+                <table class="table">
+                    <tr>
+                        <th>
+                            <h5>Items: <strong id="totalItem"></strong></h5>
+                        </th>
+                        <th>
+                            <h5>Total: <strong id="totalAmount"><strong></h5>
+                        </th>
+
+                    </tr>
+                </table>
+            </div>
+
+            <div>
+                <div class="cart-row"
+                    style="display: flex; align-items: flex-stretch; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #ececec;">
+                    <div style="flex: 2;"></div>
+                    <div style="flex: 2;"> <strong>Item</strong> </div>
+                    <div style="flex: 2;"><strong>Price</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    document.querySelector('#brand').style.display = 'none';
+    document.querySelector('#category').style.display = 'none';
+</script>
+
+<script>
+    orderList()
+    function orderList() {
+        // url lto fetch all the orders of that user.
+        var url = 'http://127.0.0.1:8000/api/orders/'
+        fetch(url)
+            // parse in json
+            .then((resp) => resp.json())
+
+            .then(function (data) {
+                console.log('Order', data)
+                var list = data;
+                for (var i in list) {
+                    var orderList = document.getElementById('orderList');
+                    var li = document.createElement('li');
+                    li.innerHTML = 'Order No: ' + list[i].id;
+                    orderList.append(li)
+
+                    var status = document.createElement('span');
+                    status.innerHTML = list[i].statusname;
+                    status.className = "ml-4"
+                    status.style.color = 'green'
+                    li.append(status)
+
+                    var detail = document.createElement('button');
+                    detail.className = "btn btn-dark mr-3 orderDetails";
+                    detail.id = list[i].id
+                    detail.innerHTML = 'View Detail';
+                    detail.style.float= 'right'
+                    detail.setAttribute('data-id', list[i].id)
+                    detail.setAttribute('data-amount', list[i].amount)
+                    // On clicking in this button it will display order summary to user.
+                    detail.addEventListener("click", function () {
+                        document.querySelectorAll('.orderDetails').forEach(function (button) {
+                            button.onclick = function () {
+                                document.querySelector('#orderSummary').style.display = '';
+                                var deleteDiv = document.getElementById('productList');
+                                // If View Details of different order remove details of old order first
+                                // before displaying details of new orders.
+                                if (deleteDiv != null) {
+                                    deleteDiv.remove();
+                                }
+                                // url to fetch data of particular order by using order id.
+
+                                var orderID = button.dataset.id;
+                                var url = 'http://127.0.0.1:8000/api/order/' + orderID + '/';
+                                //fetching data from above url
+                                fetch(url)
+                                    // parse in json
+                                    .then((resp) => resp.json())
+                                    // data = list of product
+                                    .then(function (data) {
+                                        console.log('Data', data)
+                                        var list1 = data;
+                                        // count items in order
+                                        itemCnt = 0;
+                                        var boxElement = document.querySelector('#box-element');
+                                        // Every order summary product list is inside in this div tag.
+                                        var productList = document.createElement('div');
+                                        productList.id = 'productList';
+                                        boxElement.append(productList);
+
+                                        for (var i in list1) {
+                                            // Product details to show in order summary
+                                            var url = 'http://127.0.0.1:8000/api/product/' + list1[i].product + '/';
+                                            fetch(url)
+                                                // parse in json
+                                                .then((resp) => resp.json())
+                                                // data = list of product
+                                                .then(function (data) {
+                                                    console.log('productList', data)
+                                                    var list2 = data;
+                                                    for (var i in list2) {
+                                                        console.log('**'+list[i].id)
+                                                        var row = document.createElement('div');
+                                                        row.className = "cart-row";
+                                                        row.style.display = 'flex';
+                                                        row.style.alignItems = 'flex-stretch';
+                                                        row.style.paddingBottom = 10;
+                                                        row.style.marginBottom = 10;
+                                                        productList.append(row);
+
+                                                        var imgDiv = document.createElement('div');
+                                                        imgDiv.style.flex = 2;
+                                                        row.append(imgDiv);
+                                                        var img = document.createElement('img');
+                                                        img.style.width = '100px';
+                                                        img.src = list2[i].image;
+                                                        imgDiv.append(img);
+
+                                                        var productInfo = document.createElement('div');
+                                                        productInfo.style.flex = 2;
+                                                        row.append(productInfo);
+                                                        var name = document.createElement('p');
+                                                        name.innerHTML = list2[i].name;
+                                                        productInfo.append(name);
+                                                        var collection = document.createElement('small');
+                                                        collection.innerHTML = list2[i].gender.gender + ' collection';
+                                                        productInfo.append(collection);
+                                                        var size = document.createElement('p');
+                                                        size.innerHTML = list[i].Shoesize;
+                                                        productInfo.append(size);
+
+                                                        var priceDiv = document.createElement('div');
+                                                        priceDiv.style.flex = 2;
+                                                        priceDiv.innerHTML = '$ ' + list2[i].price;
+                                                        row.append(priceDiv);
+
+                                                        var line = document.createElement('hr')
+                                                        productList.append(line);
+
+                                                    }
+
+                                                })
+
+                                            itemCnt++;
+                                        }
+                                        document.querySelector('#totalItem').innerHTML = itemCnt;
+                                        document.querySelector('#totalAmount').innerHTML = '$' + button.dataset.amount;
+                                    })
+                            }
+                        });
+                    });
+                    li.append(detail)
+
+                    var hr = document.createElement('hr');
+                    orderList.append(hr)
+                }
+            })
+    }
+
+</script>
+{% endblock %}
